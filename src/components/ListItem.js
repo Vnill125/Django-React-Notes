@@ -8,5 +8,4 @@ const ListItem = ({note}) => {
   )
 }
 
-
 export default ListItem
