@@ -9,7 +9,7 @@ function App() {
     <Router>
     <div className="App">
       <Header/>
-      <NotesListPage/>
+      <Route path='/' exact component={NotesListPage}>
     </div>
     </Router>
   );
