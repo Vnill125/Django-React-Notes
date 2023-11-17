@@ -1,14 +1,13 @@
-from django.shortcuts import render
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from .models import Note
-from .serializers import NotesSerializer
+from .models import Notes
+from .serializer import NotesSerializer
 # Create your views here.
 
 @api_view(['GET'])
 def getRoutes(request):
-    
+
     routes = [
         {
             'Endpoint': '/notes/',
@@ -41,19 +40,43 @@ def getRoutes(request):
             'description': 'Deletes and exiting note'
         },
     ]
-    
     return Response(routes)
 
 @api_view(['GET'])
 def getNotes(request):
-    notes = Note.objects.all()
-    serializer = NotesSerializer(notes, many=True)
+    if request.method == 'GET':
+        notes = Notes.objects.all().order_by('-updated')
+        serializer = NotesSerializer(notes, many=True)
+        return Response(serializer.data)
+
+@api_view(['GET', 'POST'])
+def getNote(request, pk):
+    if request.method == 'GET':
+        notes = Notes.objects.get(id=pk)
+        serializer = NotesSerializer(notes, many=False)
+        return Response(serializer.data)
+
+@api_view(['POST'])
+def createNote(request):
+    note = Notes.objects.create(
+        body = request.data['body']
+        )
+    serializer = NotesSerializer(note, many=False)
+    return Response(serializer.data)
     
+    
+@api_view(['PUT'])    
+def updateNote(request, pk):
+    data = request.data
+    note = Notes.objects.get(id = pk)
+    serializer = NotesSerializer(instance=note, data=data)
+    if serializer.is_valid():
+        serializer.save()
     return Response(serializer.data)
 
-@api_view(['GET'])
-def getNote(request, pk):
-    note = Note.objects.get(id=pk)
-    serializer = NotesSerializer(note, many=False)
-    
-    return Response(serializer.data)
+@api_view(['DELETE'])    
+def deleteNote(request, pk):
+    note = Notes.objects.get(id=pk)
+    note.delete()
+    return Response('Note was deleted!')
+
